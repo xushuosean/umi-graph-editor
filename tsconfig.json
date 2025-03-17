@@ -1,0 +1,14 @@
+{
+  "extends": "./src/.umi/tsconfig.json",
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "typeRoots": [
+      "node_modules/@types",
+      "node_modules/@typed-mxgraph"
+    ],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}
