@@ -27,10 +27,13 @@ const GraphContainer = () => {
 
     setGraph(graph);
     if (!graph) return;
-    console.log(graph)
     new mx.mxRubberband(graph!);
 
     graph.setPanning(true);
+    graph.setDropEnabled(true);
+
+    // 设置画布扩展方向
+    graph.maximumGraphBounds = new mx.mxRectangle(0, 0, Infinity, Infinity);
 
     graph.getModel().beginUpdate();
       try {
@@ -46,7 +49,12 @@ const GraphContainer = () => {
       model?.beginUpdate();
 
       try {
-        graph?.insertVertex(graph?.getDefaultParent(), null, block.x,  block.x, block.y, block.width, block.height);
+        let parent = graph?.getDefaultParent();
+        console.log(block.parentId, 'adsf')
+        if (block.parentId) {
+          parent = model?.getCell(block.parentId);
+        }
+        graph?.insertVertex(parent, block.id, block,  block.x, block.y, block.width, block.height);
       } finally {
         model?.endUpdate();
       }
@@ -57,8 +65,8 @@ const GraphContainer = () => {
     }
   }, [])
 
-  return <div>
-    <Sider graph={graph} />
+  return <div className={styles.graphContainer}>
+    <Sider graph={graph} className={styles.sider} />
     <div className={styles.container} ref={containerRef}></div>
   </div>;
 };

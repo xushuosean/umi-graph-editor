@@ -1,7 +1,7 @@
 import { Subject } from "rxjs";
-import { Shape } from "./Shape";
+import { RawShape, Shape } from "./Shape";
 
-export type ConnectionMessageType = Shape[]
+export type ConnectionMessageType = RawShape[]
 
 export type ConnectionDataType = Shape[]
 

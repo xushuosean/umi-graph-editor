@@ -3,7 +3,7 @@ import { Subject } from "rxjs";
 import { ConnectionDataType, IConnectionService } from "../IConnectionService";
 import { IMessageService } from "../IMessageService";
 import { IProjectService } from "../interfaces";
-import { BlockShape, LineShape } from "../Shape";
+import { BlockShape, LineShape, RawBlockShape, RawLineShape } from "../Shape";
 import { TYPES } from "../types";
 import { DiagramService } from "./DiagramService";
 
@@ -47,19 +47,19 @@ export class ProjectService implements IProjectService {
 
 
   /** action function */
-  addBlocks(blocks: BlockShape[]): void {
+  addBlocks(blocks: RawBlockShape[]): void {
     this.connectionService.sendMessage(blocks)
   }
 
   /** action function */
-  addLines(lines: LineShape[]): void {
+  addLines(lines: RawLineShape[]): void {
     this.connectionService.sendMessage(lines)
   }
 
 
   blockAdded(block: BlockShape) {
-    console.log(block, 'jijojjkl;', this.$blockShapeSubject)
-    this.$blockShapeSubject.next(block)
+    this.blockShapes.set(block.id, block);
+    this.$blockShapeSubject.next(block);
   }
 
   blocksAdded(blocks: BlockShape[]) {
@@ -89,4 +89,7 @@ export class ProjectService implements IProjectService {
   }
 
   linesDeleted(lines: LineShape[]) { }
+
+
+  blockShapes: Map<string, BlockShape> = new Map();
 }

@@ -1,10 +1,10 @@
 import { Subject } from "rxjs";
 import { DiagramService } from "./services/DiagramService";
-import { BlockShape, LineShape } from "./Shape";
+import { BlockShape, LineShape, RawBlockShape, RawLineShape } from "./Shape";
 
 export interface IProjectService {
-  addBlocks(blocks: BlockShape[]): void;
-  addLines(lines: LineShape[]): void;
+  addBlocks(blocks: RawBlockShape[]): void;
+  addLines(lines: RawLineShape[]): void;
   
   blocksAdded: (blocks: BlockShape[]) => void;
   linesAdded: (lines: LineShape[]) => void;
