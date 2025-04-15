@@ -1,3 +1,4 @@
+import { GraphicType } from "@/graphic/shapes";
 
 export type ElementData = {
   id: string;
@@ -11,6 +12,7 @@ export type Shape = {
   dataId: string;
   block?: boolean;
   line?: boolean;
+  graphicType?: GraphicType;
   GetElementData?: () => ElementData;
 };
 
@@ -32,6 +34,7 @@ export type RawShape = {
   parentId?: string;
   block?: boolean;
   line?: boolean;
+  graphicType?: GraphicType;
 }
 
 export type RawBlockShape = RawShape & {

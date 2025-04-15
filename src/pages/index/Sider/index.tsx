@@ -1,3 +1,4 @@
+import { GraphicType } from "@/graphic/shapes";
 import { IProjectService } from "@/ioc/interfaces";
 import { myContainer } from "@/ioc/inversify.config";
 import { RawBlockShape } from "@/ioc/Shape";
@@ -21,12 +22,14 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
       width: 200,
       height: 100,
       icon: <FundOutlined />,
+      graphicType: GraphicType.Rect
     },
     {
       name: "圆形",
       width: 200,
       height: 100,
       icon: <SunOutlined />,
+      graphicType: GraphicType.Circle
     },
   ];
 
@@ -43,7 +46,8 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
           y,
           width: item.width,
           height: item.height,
-          parentId: dropTarget?.id
+          parentId: dropTarget?.id,
+          graphicType: item.graphicType,
         };
 
         projectService.addBlocks([block]);
@@ -59,7 +63,7 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
             className="siderItem"
             onMouseOver={(e) => {
               const { target } = e;
-              if ((target as HTMLElement).dataset.makeDraggable) return;
+              if ((target as HTMLElement).dataset.makeDraggable || (target instanceof HTMLElement && target.className !== 'siderItem')) return;
 
               makeDraggable(target as HTMLElement, graph, item);
 

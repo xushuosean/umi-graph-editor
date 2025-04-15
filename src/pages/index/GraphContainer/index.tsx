@@ -1,3 +1,4 @@
+import { registerShape, registerStyles } from "@/graphic/shapes";
 import { useProjectService } from "@/hooks/useProjectService";
 import mx from '@/mxgraph';
 import { mxGraph } from "mxgraph";
@@ -35,6 +36,9 @@ const GraphContainer = () => {
     // 设置画布扩展方向
     graph.maximumGraphBounds = new mx.mxRectangle(0, 0, Infinity, Infinity);
 
+    registerShape();
+    registerStyles(graph);
+
     graph.getModel().beginUpdate();
       try {
         var v1 = graph.insertVertex(graph?.getDefaultParent(), null, 'Hello,', 20, 20, 80, 30);
@@ -50,11 +54,10 @@ const GraphContainer = () => {
 
       try {
         let parent = graph?.getDefaultParent();
-        console.log(block.parentId, 'adsf')
         if (block.parentId) {
           parent = model?.getCell(block.parentId);
         }
-        graph?.insertVertex(parent, block.id, block,  block.x, block.y, block.width, block.height);
+        graph?.insertVertex(parent, block.id, block,  block.x, block.y, block.width, block.height, block.graphicType);
       } finally {
         model?.endUpdate();
       }
