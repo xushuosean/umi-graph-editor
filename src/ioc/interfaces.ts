@@ -5,6 +5,9 @@ import { BlockShape, LineShape, RawBlockShape, RawLineShape } from "./Shape";
 export interface IProjectService {
   addBlocks(blocks: RawBlockShape[]): void;
   addLines(lines: RawLineShape[]): void;
+
+  updateBlocks(blocks: RawBlockShape[]): void;
+  updateLines(lines: RawLineShape[]): void;
   
   blocksAdded: (blocks: BlockShape[]) => void;
   linesAdded: (lines: LineShape[]) => void;
@@ -18,7 +21,8 @@ export interface IProjectService {
   currentDiagramService: DiagramService | null;
   createDiagram(): void;
 
-  $blockShapeSubject: Subject<BlockShape>;
+  $blockShapesSubject: Subject<BlockShape[]>;
+  $blockShapesUpdateSubject: Subject<BlockShape[]>;
 }
 
 

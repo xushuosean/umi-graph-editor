@@ -7,6 +7,7 @@ import mx from "@/mxgraph";
 import { FundOutlined, SunOutlined } from "@ant-design/icons";
 import { mxCell, mxGraph } from "mxgraph";
 import { FC } from "react";
+import { v4 } from "uuid";
 
 type SiderProps = {
   graph: mxGraph | null;
@@ -41,13 +42,16 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
       graph,
       (sender: mxGraph, evt: MouseEvent, dropTarget: mxCell, x: number, y: number) => {
         const block: RawBlockShape = {
+          id: v4(),
           block: true,
-          x,
-          y,
-          width: item.width,
-          height: item.height,
           parentId: dropTarget?.id,
           graphicType: item.graphicType,
+          styles: {
+            x,
+            y,
+            width: item.width,
+            height: item.height,
+          }
         };
 
         projectService.addBlocks([block]);
@@ -63,7 +67,8 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
             className="siderItem"
             onMouseOver={(e) => {
               const { target } = e;
-              if ((target as HTMLElement).dataset.makeDraggable || (target instanceof HTMLElement && target.className !== 'siderItem')) return;
+              if ((target as HTMLElement).dataset.makeDraggable) return;
+              if (((target as HTMLElement).className !== 'siderItem')) return;
 
               makeDraggable(target as HTMLElement, graph, item);
 

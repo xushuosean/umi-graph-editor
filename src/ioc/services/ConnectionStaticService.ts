@@ -17,7 +17,6 @@ class ConnectionStaticService implements IConnectionService {
       const dataId = v4();
       return {
         ...shape,
-        id: v4(),
         dataId,
       }
     })

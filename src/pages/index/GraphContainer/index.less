@@ -1,9 +1,19 @@
 .graphContainer {
   display: flex;
   flex-direction: row;
+  width: 100%;
 
   & > .sider {
     width: 200px;
+  }
+
+  & > .container {
+    flex: 1;
+    border: 1px solid #ccc;
+  }
+
+  & > .panels {
+    width: 300px;
   }
 }
 .container {

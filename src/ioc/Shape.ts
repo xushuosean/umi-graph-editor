@@ -1,13 +1,22 @@
 import { GraphicType } from "@/graphic/shapes";
 
+type BlockShapeStyles = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+type LineShapeStyles = {
+  
+}
+
 export type ElementData = {
   id: string;
 }
 
 export type Shape = {
   id: string;
-  x: number;
-  y: number;
   parentId?: string;
   dataId: string;
   block?: boolean;
@@ -18,19 +27,19 @@ export type Shape = {
 
 export type BlockData = ElementData & {}
 export type BlockShape = Shape & {
-  width: number;
-  height: number;
+  styles?: BlockShapeStyles;
 };
 
 export type LineData = ElementData & {};
 export type LineShape = Shape & {
-  
+  from: Shape,
+  to: Shape,
+  styles?: LineShapeStyles;
 };
 
 
 export type RawShape = {
-  x: number;
-  y: number;
+  id: string;
   parentId?: string;
   block?: boolean;
   line?: boolean;
@@ -38,11 +47,11 @@ export type RawShape = {
 }
 
 export type RawBlockShape = RawShape & {
-  width: number;
-  height: number;
+  styles?: BlockShapeStyles;
 };
 
-export type RawLineShape = Shape & {
+export type RawLineShape = RawShape & {
   from: RawShape,
   to: RawShape,
+  styles?: LineShapeStyles;
 };

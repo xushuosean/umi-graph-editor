@@ -12,7 +12,8 @@ export class ProjectService implements IProjectService {
   connectionService: IConnectionService;
   messageService: IMessageService;
 
-  $blockShapeSubject: Subject<BlockShape>;
+  $blockShapesSubject: Subject<BlockShape[]> = new Subject();
+  $blockShapesUpdateSubject: Subject<BlockShape[]> = new Subject();
 
   currentDiagramService: DiagramService | null = null;
 
@@ -24,20 +25,34 @@ export class ProjectService implements IProjectService {
     this.messageService = messageService;
 
     this.initListner();
-
-    this.$blockShapeSubject = new Subject();
   }
 
   initListner() {
     this.connectionService.$messageSubject.subscribe((message: ConnectionDataType) => {
-      message.forEach(item => {
-        if (item.block) {
-          this.blocksAdded([item as BlockShape])
-        }
-        if (item.line) {
-          this.linesAdded([item as LineShape])
-        }
-      })
+
+      const updateBlocks = message
+        .filter(item => item.block)
+        .filter(item => this.blockShapes.has(item.id));
+
+      console.log(message, 'upda', updateBlocks)
+
+      if (updateBlocks && updateBlocks.length > 0) {
+        this.blocksUpdated(updateBlocks)
+      }
+
+      const addBlocks = message
+        .filter(item => item.block)
+        .filter(item => !this.blockShapes.has(item.id));
+
+      // const addLines = message
+      //   .filter(item => item.line)
+      //   .filter(item => !this.lineShapes.has(item.id));
+
+      if (addBlocks && addBlocks.length > 0) {
+        this.blocksAdded(addBlocks)
+      }
+
+
     });
   }
 
@@ -56,16 +71,22 @@ export class ProjectService implements IProjectService {
     this.connectionService.sendMessage(lines)
   }
 
-
-  blockAdded(block: BlockShape) {
-    this.blockShapes.set(block.id, block);
-    this.$blockShapeSubject.next(block);
+  updateBlocks(blocks: RawBlockShape[]): void {
+    this.connectionService.sendMessage(blocks)
   }
 
+  updateLines(lines: RawLineShape[]): void {
+    this.connectionService.sendMessage(lines)
+  }
+
+
+  /** call back */
   blocksAdded(blocks: BlockShape[]) {
     blocks.forEach(block => {
-      this.blockAdded(block)
+      this.blockShapes.set(block.id, block);
     })
+
+    this.$blockShapesSubject.next(blocks);
   }
 
   lineAdded(line: LineShape) {
@@ -79,7 +100,11 @@ export class ProjectService implements IProjectService {
   }
 
   blocksUpdated(blocks: BlockShape[]) {
+    blocks.forEach(block => {
+      this.blockShapes.set(block.id, block);
+    })
 
+    this.$blockShapesUpdateSubject.next(blocks);
   }
 
   linesUpdated(lines: LineShape[]) { }
@@ -92,4 +117,5 @@ export class ProjectService implements IProjectService {
 
 
   blockShapes: Map<string, BlockShape> = new Map();
+  lineShapes: Map<string, BlockShape> = new Map();
 }
