@@ -34,7 +34,7 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
     },
   ];
 
-  const makeDraggable = (dom: HTMLElement, graph: mxGraph | null, item) => {
+  const makeDraggable = (dom: HTMLElement, graph: mxGraph | null, item: any) => {
     if (!graph) return;
 
     mx.mxUtils.makeDraggable(

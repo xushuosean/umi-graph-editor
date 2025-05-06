@@ -1,9 +1,12 @@
 import { Subject } from "rxjs";
-import { RawShape, Shape } from "./Shape";
+import { ElementData, RawShape, Shape } from "./Shape";
 
 export type ConnectionMessageType = RawShape[]
 
-export type ConnectionDataType = Shape[]
+export type ConnectionDataType = {
+  shapes: Shape[];
+  datas: ElementData[];
+}
 
 export interface IConnectionService {
   sendMessage(message: ConnectionMessageType): void;

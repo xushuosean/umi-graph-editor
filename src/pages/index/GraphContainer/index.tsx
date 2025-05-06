@@ -8,6 +8,9 @@ import { Panels } from "../Panels";
 import { ShapeProvider } from "../ShapeContext";
 import { Sider } from "../Sider";
 import styles from "./index.less";
+import { rewritePrototypeGraph } from "@/graphic/diagramRewrite";
+import { Dropdown, MenuProps } from "antd";
+import { filter, map } from "rxjs";
 
 const GraphContainer = () => {
   const projectService = useProjectService();
@@ -41,6 +44,7 @@ const GraphContainer = () => {
     // 设置画布扩展方向
     graph.maximumGraphBounds = new mx.mxRectangle(0, 0, Infinity, Infinity);
 
+    rewritePrototypeGraph();
     registerShape();
     registerStyles(graph);
 
@@ -106,66 +110,108 @@ const GraphContainer = () => {
         }
       );
 
-    const addSub = projectService.$blockShapesSubject.subscribe((blocks) => {
-      const model = graph?.getModel();
-      model?.beginUpdate();
+    /** subscribe start */
 
-      try {
-        blocks.forEach((block) => {
-          let parent = graph?.getDefaultParent();
-          if (block.parentId) {
-            parent = model?.getCell(block.parentId);
-          }
-
-          const { x = 0, y = 0, width = 10, height = 10 } = block?.styles ?? {};
-
-          graph?.insertVertex(
-            parent,
-            block.id,
-            block,
-            x,
-            y,
-            width,
-            height,
-            block.graphicType
-          );
-        });
-      } finally {
-        model?.endUpdate();
-      }
-    });
-
-    const updateSub = projectService.$blockShapesUpdateSubject.subscribe(
-      (blocks) => {
+    const addSub = projectService.$blockShapesSubject
+      .subscribe((blocks) => {
         const model = graph?.getModel();
         model?.beginUpdate();
+
         try {
           blocks.forEach((block) => {
-            const cell = graph.model.getCell(block.id);
-            graph.getModel().setValue(cell, block);
-          });
+            let parent = graph?.getDefaultParent();
+            if (block.parentId) {
+              parent = model?.getCell(block.parentId);
+            }
 
-          const cells = blocks.map((block) => {
-            return graph.model.getCell(block.id);
-          });
+            const { x = 0, y = 0, width = 10, height = 10 } = block?.styles ?? {};
 
-          setShapes(cells.map((item) => item.value as Shape));
+            graph?.insertVertex(
+              parent,
+              block.id,
+              block,
+              x,
+              y,
+              width,
+              height,
+              block.graphicType
+            );
+          });
         } finally {
           model?.endUpdate();
         }
+      });
+
+    const updateSub = projectService.$blockShapesUpdateSubject
+      .subscribe(
+        (blocks) => {
+          const model = graph?.getModel();
+          model?.beginUpdate();
+          try {
+            blocks.forEach((block) => {
+              const cell = graph.model.getCell(block.id);
+              graph.getModel().setValue(cell, block);
+            });
+
+            const cells = blocks.map((block) => {
+              return graph.model.getCell(block.id);
+            });
+
+            setShapes(cells.map((item) => item.value as Shape));
+          } finally {
+            model?.endUpdate();
+          }
+        }
+      );
+
+    const deleleSub = projectService.$blockShapesDeleteSubject.subscribe(blocks => {
+      const model = graph?.getModel();
+      model?.beginUpdate();
+      try {
+        const cells = blocks.map((block) => {
+          return graph.model.getCell(block.id);
+        });
+
+        graph.removeCells(cells)
+      } finally {
+        model?.endUpdate();
       }
-    );
+    })
+
+    /** subscribe end */
 
     return () => {
       addSub?.unsubscribe();
       updateSub?.unsubscribe();
+      deleleSub?.unsubscribe()
     };
   }, []);
+
+  const items: MenuProps['items'] = [
+    {
+      label: '删除',
+      key: 'blockDelete',
+      onClick: () => {
+        const cells = graph?.getSelectionCells() ?? [];
+        const blocks: RawBlockShape[] = cells.map(cell => {
+          const block = cell.value;
+          return {
+            ...block,
+            isDelete: true
+          }
+        })
+
+        projectService.deleteBlocks(blocks)
+      }
+    },
+  ];
 
   return (
     <div className={styles.graphContainer}>
       <Sider graph={graph} className={styles.sider} />
-      <div className={styles.container} ref={containerRef}></div>
+      <Dropdown menu={{ items }} trigger={['contextMenu']}>
+        <div className={styles.container} ref={containerRef}></div>
+      </Dropdown>
       <div className={styles.panels}>
         <ShapeProvider value={shapes}>
           <Panels />

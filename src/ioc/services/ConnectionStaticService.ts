@@ -13,13 +13,26 @@ class ConnectionStaticService implements IConnectionService {
   }
 
   mapRawShapeToShape(shapes: ConnectionMessageType) {
-    return shapes.map(shape => {
+    const newShapes = shapes.map(shape => {
       const dataId = v4();
       return {
         ...shape,
         dataId,
       }
     })
+
+    const newDatas = newShapes.map(shape => {
+      return {
+        id: shape.dataId,
+        value: 'shape data Value',
+        shapeId: shape.id,
+      }
+    })
+
+    return {
+      shapes: newShapes,
+      datas: newDatas,
+    }
   }
 
   onMessage(message: ConnectionMessageType) {

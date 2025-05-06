@@ -1,5 +1,7 @@
 import { GraphicType } from "@/graphic/shapes";
 
+export type GUID = string;
+
 type BlockShapeStyles = {
   x: number;
   y: number;
@@ -8,18 +10,21 @@ type BlockShapeStyles = {
 }
 
 type LineShapeStyles = {
-  
+
 }
 
 export type ElementData = {
-  id: string;
+  id: GUID;
+  value: any;
+  shapeId: GUID;
 }
 
 export type Shape = {
-  id: string;
-  parentId?: string;
-  dataId: string;
+  id: GUID;
+  parentId?: GUID;
+  dataId: GUID;
   block?: boolean;
+  isDelete?: boolean;
   line?: boolean;
   graphicType?: GraphicType;
   GetElementData?: () => ElementData;
@@ -39,8 +44,9 @@ export type LineShape = Shape & {
 
 
 export type RawShape = {
-  id: string;
-  parentId?: string;
+  id: GUID;
+  parentId?: GUID;
+  isDelete?: boolean;
   block?: boolean;
   line?: boolean;
   graphicType?: GraphicType;

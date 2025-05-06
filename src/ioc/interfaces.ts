@@ -8,7 +8,10 @@ export interface IProjectService {
 
   updateBlocks(blocks: RawBlockShape[]): void;
   updateLines(lines: RawLineShape[]): void;
-  
+
+  deleteBlocks(blocks: RawBlockShape[]): void;
+  deleteLines(lines: RawLineShape[]): void;
+
   blocksAdded: (blocks: BlockShape[]) => void;
   linesAdded: (lines: LineShape[]) => void;
 
@@ -23,6 +26,7 @@ export interface IProjectService {
 
   $blockShapesSubject: Subject<BlockShape[]>;
   $blockShapesUpdateSubject: Subject<BlockShape[]>;
+  $blockShapesDeleteSubject: Subject<BlockShape[]>;
 }
 
 
