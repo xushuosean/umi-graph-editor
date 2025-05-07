@@ -1,34 +1,27 @@
-import { useBlockShapes, useShapes } from "../ShapeContext";
+import { useMemo } from "react";
+import { useShapes } from "../ShapeContext";
+import { getPanelConfig } from "./utils/getPanelConfig";
 
 const Panels = () => {
   const shapes = useShapes();
 
-  console.log(shapes)
+  const panelConfigs = useMemo(() => {
+    return getPanelConfig(shapes);
+  }, [shapes]);
 
-  const blockShape = useBlockShapes();
-
-  return <div>
-    {
-      shapes.map(shape => shape.id)
-    }
-
-    blockShapes: 
+  return (
     <div>
-      {
-        blockShape.map(shape => {
-          return <div key={shape.id}>
-            <div>{shape.styles?.x}</div>
-            <div>{shape.styles?.y}</div>
-            <div>{shape.styles?.width}</div>
-            <div>{shape.styles?.height}</div>
-          </div>
-        })
-      }
-    </div>
-  </div>
-}
+      {panelConfigs.style &&
+        Object.keys(panelConfigs.style).map((key) => {
+          return <div key={key}>{panelConfigs.style![key]}</div>;
+        })}
 
-export {
-  Panels
+      {panelConfigs.common &&
+        Object.keys(panelConfigs.common).map((key) => {
+          return <div key={key}>{panelConfigs.common![key]}</div>;
+        })}
+    </div>
+  );
 };
 
+export { Panels };

@@ -7,6 +7,7 @@ type BlockShapeStyles = {
   y: number;
   width: number;
   height: number;
+  visible: boolean;
 }
 
 type LineShapeStyles = {
@@ -50,6 +51,7 @@ export type RawShape = {
   block?: boolean;
   line?: boolean;
   graphicType?: GraphicType;
+  styles?: BlockShapeStyles | LineShapeStyles;
 }
 
 export type RawBlockShape = RawShape & {

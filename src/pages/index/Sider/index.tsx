@@ -51,6 +51,7 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
             y,
             width: item.width,
             height: item.height,
+            visible: true,
           }
         };
 

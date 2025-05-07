@@ -1,9 +1,9 @@
 import { inject, injectable } from "inversify";
-import { filter, Subject } from "rxjs";
-import { ConnectionDataType, IConnectionService } from "../IConnectionService";
+import { Subject } from "rxjs";
+import { ConnectionAction, ConnectionDataType, IConnectionService } from "../IConnectionService";
 import { IMessageService } from "../IMessageService";
 import { IProjectService } from "../interfaces";
-import { BlockData, BlockShape, ElementData, LineShape, RawBlockShape, RawLineShape } from "../Shape";
+import { BlockData, BlockShape, ElementData, GUID, LineShape, RawBlockShape, RawLineShape } from "../Shape";
 import { TYPES } from "../types";
 import { DiagramService } from "./DiagramService";
 
@@ -73,32 +73,50 @@ export class ProjectService implements IProjectService {
 
   /** action function add block */
   addBlocks(blocks: RawBlockShape[]): void {
-    this.connectionService.sendMessage(blocks)
+    this.connectionService.sendMessage({
+      type: ConnectionAction.Add,
+      shapes: blocks
+    })
   }
 
   /** action function add line */
   addLines(lines: RawLineShape[]): void {
-    this.connectionService.sendMessage(lines)
+    this.connectionService.sendMessage({
+      type: ConnectionAction.Add,
+      shapes: lines
+    })
   }
 
   /** action functio update block */
   updateBlocks(blocks: RawBlockShape[]): void {
-    this.connectionService.sendMessage(blocks)
+    this.connectionService.sendMessage({
+      type: ConnectionAction.Update,
+      shapes: blocks
+    })
   }
 
   /** action function update line */
   updateLines(lines: RawLineShape[]): void {
-    this.connectionService.sendMessage(lines)
+    this.connectionService.sendMessage({
+      type: ConnectionAction.Update,
+      shapes: lines
+    })
   }
 
   /** action function delete block */
-  deleteBlocks(blocks: RawBlockShape[]): void {
-    this.connectionService.sendMessage(blocks)
+  deleteBlocks(blockIds: GUID[]): void {
+    this.connectionService.sendMessage({
+      type: ConnectionAction.Delete,
+      ids: blockIds
+    })
   }
 
   /** action function delete line */
-  deleteLines(lines: RawLineShape[]): void {
-    this.connectionService.sendMessage(lines)
+  deleteLines(lineIds: GUID[]): void {
+    this.connectionService.sendMessage({
+      type: ConnectionAction.Delete,
+      ids: lineIds,
+    })
   }
 
   /** call back */

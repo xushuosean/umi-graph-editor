@@ -1,16 +1,15 @@
+import { rewritePrototypeGraph } from "@/graphic/diagramRewrite";
 import { registerShape, registerStyles } from "@/graphic/shapes";
 import { useProjectService } from "@/hooks/useProjectService";
 import { BlockShape, RawBlockShape, Shape } from "@/ioc/Shape";
 import mx from "@/mxgraph";
+import { Dropdown } from "antd";
 import { mxCell, mxEventObject, mxGraph, mxGraphSelectionModel } from "mxgraph";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Panels } from "../Panels";
-import { ShapeProvider } from "../ShapeContext";
+import { ShapeProvider, useMenus } from "../ShapeContext";
 import { Sider } from "../Sider";
 import styles from "./index.less";
-import { rewritePrototypeGraph } from "@/graphic/diagramRewrite";
-import { Dropdown, MenuProps } from "antd";
-import { filter, map } from "rxjs";
 
 const GraphContainer = () => {
   const projectService = useProjectService();
@@ -151,6 +150,11 @@ const GraphContainer = () => {
             blocks.forEach((block) => {
               const cell = graph.model.getCell(block.id);
               graph.getModel().setValue(cell, block);
+
+              const geo = new mx.mxGeometry(block.styles?.x, block.styles?.y, block.styles?.width, block.styles?.height)
+              graph.getModel().setGeometry(cell, geo);
+              
+              graph.getModel().setVisible(cell, block.styles?.visible ?? true);
             });
 
             const cells = blocks.map((block) => {
@@ -187,29 +191,12 @@ const GraphContainer = () => {
     };
   }, []);
 
-  const items: MenuProps['items'] = [
-    {
-      label: '删除',
-      key: 'blockDelete',
-      onClick: () => {
-        const cells = graph?.getSelectionCells() ?? [];
-        const blocks: RawBlockShape[] = cells.map(cell => {
-          const block = cell.value;
-          return {
-            ...block,
-            isDelete: true
-          }
-        })
-
-        projectService.deleteBlocks(blocks)
-      }
-    },
-  ];
+  const menus = useMenus(shapes);
 
   return (
     <div className={styles.graphContainer}>
       <Sider graph={graph} className={styles.sider} />
-      <Dropdown menu={{ items }} trigger={['contextMenu']}>
+      <Dropdown trigger={["contextMenu"]} menu={{items: menus}}>
         <div className={styles.container} ref={containerRef}></div>
       </Dropdown>
       <div className={styles.panels}>

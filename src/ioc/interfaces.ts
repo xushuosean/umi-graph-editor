@@ -1,6 +1,6 @@
 import { Subject } from "rxjs";
 import { DiagramService } from "./services/DiagramService";
-import { BlockShape, LineShape, RawBlockShape, RawLineShape } from "./Shape";
+import { BlockShape, GUID, LineShape, RawBlockShape, RawLineShape } from "./Shape";
 
 export interface IProjectService {
   addBlocks(blocks: RawBlockShape[]): void;
@@ -9,8 +9,8 @@ export interface IProjectService {
   updateBlocks(blocks: RawBlockShape[]): void;
   updateLines(lines: RawLineShape[]): void;
 
-  deleteBlocks(blocks: RawBlockShape[]): void;
-  deleteLines(lines: RawLineShape[]): void;
+  deleteBlocks(blockIds: GUID[]): void;
+  deleteLines(lineIds: GUID[]): void;
 
   blocksAdded: (blocks: BlockShape[]) => void;
   linesAdded: (lines: LineShape[]) => void;
