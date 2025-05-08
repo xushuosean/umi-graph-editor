@@ -3,7 +3,7 @@ import { Subject } from "rxjs";
 import { ConnectionAction, ConnectionDataType, IConnectionService } from "../IConnectionService";
 import { IMessageService } from "../IMessageService";
 import { IProjectService } from "../interfaces";
-import { BlockData, BlockShape, ElementData, GUID, LineShape, RawBlockShape, RawLineShape } from "../Shape";
+import { BlockData, BlockShape, ElementData, GUID, LineData, LineShape, RawBlockShape, RawLineShape } from "../Shape";
 import { TYPES } from "../types";
 import { DiagramService } from "./DiagramService";
 
@@ -15,6 +15,10 @@ export class ProjectService implements IProjectService {
   $blockShapesSubject: Subject<BlockShape[]> = new Subject();
   $blockShapesUpdateSubject: Subject<BlockShape[]> = new Subject();
   $blockShapesDeleteSubject: Subject<BlockShape[]> = new Subject();
+
+  $lineShapesSubject: Subject<LineShape[]> = new Subject();
+  $lineShapesUpdateSubject: Subject<LineShape[]> = new Subject();
+  $lineShapesDeleteSubject: Subject<LineShape[]> = new Subject();
 
   currentDiagramService: DiagramService | null = null;
 
@@ -34,11 +38,17 @@ export class ProjectService implements IProjectService {
       /** data start */
       if (message.datas && message.datas.length > 0) {
         message.datas.forEach(item => {
-          this.blockDatas.set(item.id, item);
+          if (item.line) {
+            this.lineDatas.set(item.id, item);
+          }
+          if (item.block) {
+            this.blockDatas.set(item.id, item);
+          }
         })
       }
       /** data end */
 
+      /** update block */
       const updatedBlocks = message.shapes
         .filter(item => item.block)
         .filter(item => !item.isDelete)
@@ -48,6 +58,18 @@ export class ProjectService implements IProjectService {
         this.blocksUpdated(updatedBlocks)
       }
 
+      /** update line */
+
+      const updateLines = message.shapes
+        .filter(item => item.line)
+        .filter(item => !item.isDelete)
+        .filter(item => this.lineShapes.has(item.id)) as LineShape[];
+
+      if (updateLines && updateLines.length > 0) {
+        this.linesUpdated(updateLines)
+      }
+
+      /** add block */
       const addedBlocks = message.shapes
         .filter(item => item.block)
         .filter(item => !item.isDelete)
@@ -57,11 +79,30 @@ export class ProjectService implements IProjectService {
         this.blocksAdded(addedBlocks)
       }
 
+      /** add line */
+      const addedLines = message.shapes
+        .filter(item => item.line)
+        .filter(item => !item.isDelete)
+        .filter(item => !this.lineShapes.has(item.id)) as LineShape[];
+
+      if (addedLines && addedLines.length > 0) {
+        this.linesAdded(addedLines)
+      }
+
+      /** delete blocks */
       const deletedBlocks = message.shapes
         .filter(item => item.isDelete);
 
       if (deletedBlocks && deletedBlocks.length > 0) {
         this.blocksDeleted(deletedBlocks)
+      }
+
+      /** delete lines */
+      const deletedLines = message.shapes
+        .filter(item => item.isDelete) as LineShape[];
+
+      if (deletedLines && deletedLines.length > 0) {
+        this.linesDeleted(deletedLines)
       }
     });
   }
@@ -131,14 +172,15 @@ export class ProjectService implements IProjectService {
     this.$blockShapesSubject.next(blocks);
   }
 
-  lineAdded(line: LineShape) {
-
-  }
-
   linesAdded(lines: LineShape[]) {
     lines.forEach(line => {
-      this.lineAdded(line)
+      line.GetElementData = () => {
+        return this.lineDatas.get(line.dataId) ?? {} as unknown as ElementData;
+      }
+      this.lineShapes.set(line.id, line);
     })
+
+    this.$lineShapesSubject.next(lines);
   }
 
   blocksUpdated(blocks: BlockShape[]) {
@@ -152,7 +194,16 @@ export class ProjectService implements IProjectService {
     this.$blockShapesUpdateSubject.next(blocks);
   }
 
-  linesUpdated(lines: LineShape[]) { }
+  linesUpdated(lines: LineShape[]) {
+    lines.forEach(line => {
+      line.GetElementData = () => {
+        return this.lineDatas.get(line.dataId) ?? {} as unknown as ElementData;
+      }
+      this.lineShapes.set(line.id, line);
+    })
+
+    this.$lineShapesUpdateSubject.next(lines);
+  }
 
   blocksDeleted(blocks: BlockShape[]) {
     blocks.forEach(block => {
@@ -162,10 +213,17 @@ export class ProjectService implements IProjectService {
     this.$blockShapesDeleteSubject.next(blocks)
   }
 
-  linesDeleted(lines: LineShape[]) { }
+  linesDeleted(lines: LineShape[]) {
+    lines.forEach(line => {
+      this.lineShapes.delete(line.id);
+    })
+
+    this.$lineShapesDeleteSubject.next(lines);
+  }
 
 
   blockShapes: Map<string, BlockShape> = new Map();
   blockDatas: Map<string, BlockData> = new Map();
-  lineShapes: Map<string, BlockShape> = new Map();
+  lineShapes: Map<string, LineShape> = new Map();
+  lineDatas: Map<string, LineData> = new Map();
 }

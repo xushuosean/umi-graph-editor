@@ -1,11 +1,12 @@
 import { rewritePrototypeGraph } from "@/graphic/diagramRewrite";
 import { registerStyle } from "@/graphic/styles";
 import { useProjectService } from "@/hooks/useProjectService";
-import { BlockShape, RawBlockShape, Shape } from "@/ioc/Shape";
+import { BlockShape, RawBlockShape, RawLineShape, Shape } from "@/ioc/Shape";
 import mx from "@/mxgraph";
 import { Dropdown } from "antd";
 import { mxCell, mxEventObject, mxGraph, mxGraphSelectionModel } from "mxgraph";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { v4 } from "uuid";
 import { Panels } from "../Panels";
 import { ShapeProvider, useMenus } from "../ShapeContext";
 import { Sider } from "../Sider";
@@ -39,39 +40,13 @@ const GraphContainer = () => {
     graph.setPanning(true);
     graph.setDropEnabled(true);
     graph.setConstrainChildren(false);
+    graph.setConnectable(true);
 
     // 设置画布扩展方向
     graph.maximumGraphBounds = new mx.mxRectangle(0, 0, Infinity, Infinity);
 
-    rewritePrototypeGraph();
+    rewritePrototypeGraph(graph);
     registerStyle(graph);
-
-    mx.mxCellRenderer.prototype.createShape = function(state)
-{
-	var shape = null;
-	
-	if (state.style != null)
-	{
-		// Checks if there is a stencil for the name and creates
-		// a shape instance for the stencil if one exists
-		var stencil = mx.mxStencilRegistry.getStencil(state.style[mx.mxConstants.STYLE_SHAPE]);
-		
-		if (stencil != null)
-		{
-			shape = new mx.mxShape(stencil);
-		}
-		else
-		{
-			var ctor = this.getShapeConstructor(state);
-			shape = new ctor();
-		}
-	}
-
-  console.log(state, shape, 'sdfaljkkhj');
-  
-	
-	return shape;
-};
 
     graph.addListener(
       mx.mxEvent.CELLS_RESIZED,
@@ -131,13 +106,28 @@ const GraphContainer = () => {
         (selectionModel: mxGraphSelectionModel) => {
           const cells = graph.getSelectionCells();
 
-          setShapes(cells.map((cell) => cell.value as Shape));
+          console.log(cells, 'adf');
+          
+          setShapes(
+            cells.map((cell) => cell.value as Shape).filter((item) => !!item)
+          );
         }
       );
 
+    graph.connectionHandler.addListener(mx.mxEvent.CONNECT, (sender, evt) => {
+      const edge = evt.getProperty('cell');
+      const line: RawLineShape = {
+        id: v4(),
+        line: true,
+        fromId: edge.source.id,
+        toId: edge.target.id,
+      }
+      projectService.addLines([line])
+    })
+
     /** subscribe start */
 
-    const addSub = projectService.$blockShapesSubject.subscribe((blocks) => {
+    const addBlockSub = projectService.$blockShapesSubject.subscribe((blocks) => {
       const model = graph?.getModel();
       model?.beginUpdate();
 
@@ -168,7 +158,7 @@ const GraphContainer = () => {
       }
     });
 
-    const updateSub = projectService.$blockShapesUpdateSubject.subscribe(
+    const updateBlockSub = projectService.$blockShapesUpdateSubject.subscribe(
       (blocks) => {
         const model = graph?.getModel();
         model?.beginUpdate();
@@ -199,7 +189,7 @@ const GraphContainer = () => {
       }
     );
 
-    const deleleSub = projectService.$blockShapesDeleteSubject.subscribe(
+    const deleleBlockSub = projectService.$blockShapesDeleteSubject.subscribe(
       (blocks) => {
         const model = graph?.getModel();
         model?.beginUpdate();
@@ -215,12 +205,34 @@ const GraphContainer = () => {
       }
     );
 
+    const addLineSub = projectService.$lineShapesSubject.subscribe((lines) => {
+      const model = graph?.getModel();
+      model?.beginUpdate();
+
+      try {
+        lines.forEach((line) => {
+          let parent = graph?.getDefaultParent();
+          if (line.parentId) {
+            parent = model?.getCell(line.parentId);
+          }
+
+          const from = graph?.model.getCell(line.fromId);
+          const to = graph?.model.getCell(line.toId);
+
+          graph.insertEdge(graph.getDefaultParent(), line.id, line, from, to);
+        });
+      } finally {
+        model?.endUpdate();
+      }
+    })
+
     /** subscribe end */
 
     return () => {
-      addSub?.unsubscribe();
-      updateSub?.unsubscribe();
-      deleleSub?.unsubscribe();
+      addBlockSub?.unsubscribe();
+      updateBlockSub?.unsubscribe();
+      deleleBlockSub?.unsubscribe();
+      addLineSub?.unsubscribe();
     };
   }, []);
 

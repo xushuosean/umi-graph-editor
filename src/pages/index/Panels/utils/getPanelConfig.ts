@@ -20,7 +20,7 @@ export const getPanelConfig = (shapes: Shape[]): PanelConfig => {
   };
 
   if (shapes.length === 1) {
-    if (shapes[0].block) {
+    if (shapes[0]?.block) {
       return {
         style: {
           width: PanelConfig.width,
@@ -29,7 +29,7 @@ export const getPanelConfig = (shapes: Shape[]): PanelConfig => {
         }
       }
     }
-    if (shapes[0].line) {
+    if (shapes[0]?.line) {
       return {
         style: {
           width: PanelConfig.width,

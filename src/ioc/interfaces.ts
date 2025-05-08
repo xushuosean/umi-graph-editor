@@ -27,6 +27,10 @@ export interface IProjectService {
   $blockShapesSubject: Subject<BlockShape[]>;
   $blockShapesUpdateSubject: Subject<BlockShape[]>;
   $blockShapesDeleteSubject: Subject<BlockShape[]>;
+
+  $lineShapesSubject: Subject<LineShape[]>;
+  $lineShapesUpdateSubject: Subject<LineShape[]>;
+  $lineShapesDeleteSubject: Subject<LineShape[]>;
 }
 
 

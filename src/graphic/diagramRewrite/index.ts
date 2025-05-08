@@ -1,7 +1,7 @@
-import { GUID } from './../../ioc/Shape';
 import type { Shape } from "@/ioc/Shape";
 import mx from "@/mxgraph";
 import { mxGraph } from "mxgraph";
+import { constraintsKey } from "../shapes/decoration";
 
 function isShape(value: any): value is Shape {
   return value && typeof value.id === 'string'
@@ -27,4 +27,9 @@ export const rewritePrototypeGraph = (graph?: mxGraph) => {
 
     return '';
   };
+
+  mx.mxGraph.prototype.getAllConnectionConstraints = function(terminal, source) {
+    const value = Reflect.getMetadata(constraintsKey, terminal.shape, 'getConstraints')
+    return value ? value : []
+  }
 }

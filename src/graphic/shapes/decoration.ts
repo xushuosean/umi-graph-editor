@@ -40,3 +40,13 @@ export function BindShape(shape: any) {
     };
   }
 }
+
+export const constraintsKey = Symbol('constraints');
+
+export function RegisterConstraints() {
+  return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const constraints = descriptor.value?.call(target);
+
+    Reflect.defineMetadata(constraintsKey, constraints, target, propertyKey);
+  }
+}

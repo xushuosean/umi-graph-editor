@@ -9,7 +9,7 @@ export class DefaultRectStyle {
   static get styles(): StyleMap {
     return {
       [mx.mxConstants.STYLE_FONTSIZE]: 18,
-      [mx.mxConstants.STYLE_FONTCOLOR]: 'red'
+      [mx.mxConstants.STYLE_FONTCOLOR]: 'red',
     }
   }
 }

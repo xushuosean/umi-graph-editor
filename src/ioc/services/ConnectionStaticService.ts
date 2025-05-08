@@ -63,7 +63,6 @@ class ConnectionStaticService implements IConnectionService {
   }
 
   sendMessage(message: ConnectionMessageType) {
-    console.log('message', message)
     this.onMessage(message)
   }
 
@@ -78,6 +77,8 @@ class ConnectionStaticService implements IConnectionService {
           id: shape.dataId,
           value: 'shape data Value',
           shapeId: shape.id,
+          block: !!shape.block,
+          line: !!shape.line,
         }
       })
 
