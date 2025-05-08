@@ -40,7 +40,6 @@ const GraphContainer = () => {
     graph.setPanning(true);
     graph.setDropEnabled(true);
     graph.setConstrainChildren(false);
-    graph.setConnectable(true);
 
     // 设置画布扩展方向
     graph.maximumGraphBounds = new mx.mxRectangle(0, 0, Infinity, Infinity);
@@ -107,23 +106,38 @@ const GraphContainer = () => {
           const cells = graph.getSelectionCells();
 
           console.log(cells, 'adf');
-          
+
           setShapes(
             cells.map((cell) => cell.value as Shape).filter((item) => !!item)
           );
         }
       );
 
-    graph.connectionHandler.addListener(mx.mxEvent.CONNECT, (sender, evt) => {
-      const edge = evt.getProperty('cell');
+    // graph.connectionHandler.addListener(mx.mxEvent.CONNECT, (sender, evt) => {
+    //   const edge = evt.getProperty('cell');
+    //   console.log(edge, 'sdafhjk');
+
+    //   const line: RawLineShape = {
+    //     id: v4(),
+    //     line: true,
+    //     fromId: edge.source.id,
+    //     toId: edge.target.id,
+    //   }
+    //   projectService.addLines([line])
+    // })
+
+    graph.connectionHandler.factoryMethod = (source, target) => {
       const line: RawLineShape = {
         id: v4(),
         line: true,
-        fromId: edge.source.id,
-        toId: edge.target.id,
+        fromId: source.id,
+        toId: target.id,
       }
-      projectService.addLines([line])
-    })
+      projectService.addLines([line]);
+      const edge = new mx.mxCell('');
+      edge.setEdge(true);
+      return edge
+    }
 
     /** subscribe start */
 
@@ -139,8 +153,6 @@ const GraphContainer = () => {
           }
 
           const { x = 0, y = 0, width = 10, height = 10 } = block?.styles ?? {};
-
-          console.log("adf", block.graphicType);
 
           graph?.insertVertex(
             parent,
@@ -219,7 +231,7 @@ const GraphContainer = () => {
           const from = graph?.model.getCell(line.fromId);
           const to = graph?.model.getCell(line.toId);
 
-          graph.insertEdge(graph.getDefaultParent(), line.id, line, from, to);
+          graph.insertEdge(graph.getDefaultParent(), line.id, line, from, to, 'defaultEdge');
         });
       } finally {
         model?.endUpdate();

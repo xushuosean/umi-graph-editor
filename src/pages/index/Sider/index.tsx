@@ -25,15 +25,22 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
       width: 200,
       height: 100,
       icon: <FundOutlined />,
-      graphicType: DefaultRectStyle.name
+      graphicType: DefaultRectStyle.name,
+      line: false
     },
     {
       name: "圆形",
       width: 200,
       height: 100,
       icon: <SunOutlined />,
-      graphicType: DefaultCircleStyle.name
+      graphicType: DefaultCircleStyle.name,
+      line: false
     },
+    {
+      name: '连接线',
+      icon: <SunOutlined />,
+      line: true
+    }
   ];
 
   const makeDraggable = (dom: HTMLElement, graph: mxGraph | null, item: any) => {
@@ -62,6 +69,14 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
     );
   };
 
+  const makeConnectable = (dom: HTMLElement, graph: mxGraph | null, item: any) => {
+    if (!graph) return;
+
+    dom.addEventListener('click', () => {
+      graph.setConnectable(true);
+    })
+  }
+
   return (
     <div className={className}>
       {menus.map((item) => {
@@ -73,6 +88,11 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
               if ((target as HTMLElement).dataset.makeDraggable) return;
               if (((target as HTMLElement).className !== 'siderItem')) return;
 
+              if (item.line) {
+                makeConnectable(target as HTMLElement, graph, item);
+                (target as HTMLElement).dataset.makeConnectable = "true";
+                return;
+              };
               makeDraggable(target as HTMLElement, graph, item);
 
               (target as HTMLElement).dataset.makeDraggable = "true";

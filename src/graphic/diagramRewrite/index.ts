@@ -28,8 +28,21 @@ export const rewritePrototypeGraph = (graph?: mxGraph) => {
     return '';
   };
 
-  mx.mxGraph.prototype.getAllConnectionConstraints = function(terminal, source) {
+  mx.mxGraph.prototype.getAllConnectionConstraints = function (terminal, source) {
     const value = Reflect.getMetadata(constraintsKey, terminal.shape, 'getConstraints')
     return value ? value : []
   }
+
+  mx.mxConnectionHandler.prototype.insertEdge = function (parent, id, value, source, target, style) {
+    if (this.factoryMethod == null) {
+      // return this.graph.insertEdge(parent, id, value, source, target, style);
+      return this.createEdge(value, source, target, style)
+    }
+    else {
+      var edge = this.createEdge(value, source, target, style);
+      edge = this.graph.addEdge(edge, parent, source, target);
+
+      return edge;
+    }
+  };
 }
