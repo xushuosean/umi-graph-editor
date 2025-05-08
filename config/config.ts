@@ -8,5 +8,5 @@ export default defineConfig({
   npmClient: 'yarn',
   extraBabelPlugins: [
     'babel-plugin-transform-typescript-metadata'
-  ]
+  ],
 });

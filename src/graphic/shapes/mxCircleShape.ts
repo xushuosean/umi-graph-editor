@@ -3,7 +3,7 @@ import { mxAbstractCanvas2D, mxRectangle } from "mxgraph";
 import { RegisterShape } from './decoration';
 
 @RegisterShape()
-export class mxRectShape extends mx.mxRectangleShape {
+export class mxCircleShape extends mx.mxEllipse {
   constructor(bounds: mxRectangle, fill: string, stroke: string, strokewidth?: number) {
     super(bounds, fill, stroke, strokewidth);
   }

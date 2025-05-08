@@ -1,4 +1,6 @@
-import { GraphicType } from "@/graphic/shapes";
+// import { GraphicType } from "@/graphic/shapes";
+import { DefaultRectStyle } from "@/graphic/styles";
+import { DefaultCircleStyle } from "@/graphic/styles/DefaultCircleStyle";
 import { IProjectService } from "@/ioc/interfaces";
 import { myContainer } from "@/ioc/inversify.config";
 import { RawBlockShape } from "@/ioc/Shape";
@@ -23,14 +25,14 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
       width: 200,
       height: 100,
       icon: <FundOutlined />,
-      graphicType: GraphicType.Rect
+      graphicType: DefaultRectStyle.name
     },
     {
       name: "圆形",
       width: 200,
       height: 100,
       icon: <SunOutlined />,
-      graphicType: GraphicType.Circle
+      graphicType: DefaultCircleStyle.name
     },
   ];
 

@@ -1,5 +1,5 @@
 import { rewritePrototypeGraph } from "@/graphic/diagramRewrite";
-import { registerShape, registerStyles } from "@/graphic/shapes";
+import { registerStyle } from "@/graphic/styles";
 import { useProjectService } from "@/hooks/useProjectService";
 import { BlockShape, RawBlockShape, Shape } from "@/ioc/Shape";
 import mx from "@/mxgraph";
@@ -44,8 +44,34 @@ const GraphContainer = () => {
     graph.maximumGraphBounds = new mx.mxRectangle(0, 0, Infinity, Infinity);
 
     rewritePrototypeGraph();
-    registerShape();
-    registerStyles(graph);
+    registerStyle(graph);
+
+    mx.mxCellRenderer.prototype.createShape = function(state)
+{
+	var shape = null;
+	
+	if (state.style != null)
+	{
+		// Checks if there is a stencil for the name and creates
+		// a shape instance for the stencil if one exists
+		var stencil = mx.mxStencilRegistry.getStencil(state.style[mx.mxConstants.STYLE_SHAPE]);
+		
+		if (stencil != null)
+		{
+			shape = new mx.mxShape(stencil);
+		}
+		else
+		{
+			var ctor = this.getShapeConstructor(state);
+			shape = new ctor();
+		}
+	}
+
+  console.log(state, shape, 'sdfaljkkhj');
+  
+	
+	return shape;
+};
 
     graph.addListener(
       mx.mxEvent.CELLS_RESIZED,
@@ -111,83 +137,90 @@ const GraphContainer = () => {
 
     /** subscribe start */
 
-    const addSub = projectService.$blockShapesSubject
-      .subscribe((blocks) => {
-        const model = graph?.getModel();
-        model?.beginUpdate();
-
-        try {
-          blocks.forEach((block) => {
-            let parent = graph?.getDefaultParent();
-            if (block.parentId) {
-              parent = model?.getCell(block.parentId);
-            }
-
-            const { x = 0, y = 0, width = 10, height = 10 } = block?.styles ?? {};
-
-            graph?.insertVertex(
-              parent,
-              block.id,
-              block,
-              x,
-              y,
-              width,
-              height,
-              block.graphicType
-            );
-          });
-        } finally {
-          model?.endUpdate();
-        }
-      });
-
-    const updateSub = projectService.$blockShapesUpdateSubject
-      .subscribe(
-        (blocks) => {
-          const model = graph?.getModel();
-          model?.beginUpdate();
-          try {
-            blocks.forEach((block) => {
-              const cell = graph.model.getCell(block.id);
-              graph.getModel().setValue(cell, block);
-
-              const geo = new mx.mxGeometry(block.styles?.x, block.styles?.y, block.styles?.width, block.styles?.height)
-              graph.getModel().setGeometry(cell, geo);
-              
-              graph.getModel().setVisible(cell, block.styles?.visible ?? true);
-            });
-
-            const cells = blocks.map((block) => {
-              return graph.model.getCell(block.id);
-            });
-
-            setShapes(cells.map((item) => item.value as Shape));
-          } finally {
-            model?.endUpdate();
-          }
-        }
-      );
-
-    const deleleSub = projectService.$blockShapesDeleteSubject.subscribe(blocks => {
+    const addSub = projectService.$blockShapesSubject.subscribe((blocks) => {
       const model = graph?.getModel();
       model?.beginUpdate();
-      try {
-        const cells = blocks.map((block) => {
-          return graph.model.getCell(block.id);
-        });
 
-        graph.removeCells(cells)
+      try {
+        blocks.forEach((block) => {
+          let parent = graph?.getDefaultParent();
+          if (block.parentId) {
+            parent = model?.getCell(block.parentId);
+          }
+
+          const { x = 0, y = 0, width = 10, height = 10 } = block?.styles ?? {};
+
+          console.log("adf", block.graphicType);
+
+          graph?.insertVertex(
+            parent,
+            block.id,
+            block,
+            x,
+            y,
+            width,
+            height,
+            block.graphicType
+          );
+        });
       } finally {
         model?.endUpdate();
       }
-    })
+    });
+
+    const updateSub = projectService.$blockShapesUpdateSubject.subscribe(
+      (blocks) => {
+        const model = graph?.getModel();
+        model?.beginUpdate();
+        try {
+          blocks.forEach((block) => {
+            const cell = graph.model.getCell(block.id);
+            graph.getModel().setValue(cell, block);
+
+            const geo = new mx.mxGeometry(
+              block.styles?.x,
+              block.styles?.y,
+              block.styles?.width,
+              block.styles?.height
+            );
+            graph.getModel().setGeometry(cell, geo);
+
+            graph.getModel().setVisible(cell, block.styles?.visible ?? true);
+          });
+
+          const cells = blocks.map((block) => {
+            return graph.model.getCell(block.id);
+          });
+
+          setShapes(cells.map((item) => item.value as Shape));
+        } finally {
+          model?.endUpdate();
+        }
+      }
+    );
+
+    const deleleSub = projectService.$blockShapesDeleteSubject.subscribe(
+      (blocks) => {
+        const model = graph?.getModel();
+        model?.beginUpdate();
+        try {
+          const cells = blocks.map((block) => {
+            return graph.model.getCell(block.id);
+          });
+
+          graph.removeCells(cells);
+        } finally {
+          model?.endUpdate();
+        }
+      }
+    );
 
     /** subscribe end */
 
     return () => {
       addSub?.unsubscribe();
       updateSub?.unsubscribe();
-      deleleSub?.unsubscribe()
+      deleleSub?.unsubscribe();
     };
   }, []);
 
@@ -196,7 +229,7 @@ const GraphContainer = () => {
   return (
     <div className={styles.graphContainer}>
       <Sider graph={graph} className={styles.sider} />
-      <Dropdown trigger={["contextMenu"]} menu={{items: menus}}>
+      <Dropdown trigger={["contextMenu"]} menu={{ items: menus }}>
         <div className={styles.container} ref={containerRef}></div>
       </Dropdown>
       <div className={styles.panels}>
