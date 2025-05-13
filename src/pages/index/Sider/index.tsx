@@ -50,6 +50,10 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
       dom,
       graph,
       (sender: mxGraph, evt: MouseEvent, dropTarget: mxCell, x: number, y: number) => {
+        if (dropTarget) {
+          x = x - dropTarget.geometry.x;
+          y = y - dropTarget.geometry.y;
+        }
         const block: RawBlockShape = {
           id: v4(),
           block: true,
@@ -80,6 +84,7 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
         return (
           <div
             className="siderItem"
+            data-graphic-type={item.graphicType}
             onMouseOver={(e) => {
               const { target } = e;
               if ((target as HTMLElement).dataset.makeDraggable) return;

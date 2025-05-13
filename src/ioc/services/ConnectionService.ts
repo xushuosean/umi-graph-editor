@@ -10,8 +10,8 @@ class ConnectionService implements IConnectionService {
 
   }
 
-  onMessage(message: ConnectionDataType) {
-    this.$messageSubject.next(message);
+  onMessage(datas: ConnectionDataType) {
+    this.$messageSubject.next(datas);
   }
 }
 

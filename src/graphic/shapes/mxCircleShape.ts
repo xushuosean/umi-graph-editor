@@ -1,6 +1,6 @@
 import mx from '@/mxgraph';
 import { mxAbstractCanvas2D, mxRectangle } from "mxgraph";
-import { RegisterConstraints, RegisterShape } from './decoration';
+import { AllowNestingChild, RegisterConstraints, RegisterShape } from './decoration';
 
 @RegisterShape()
 export class mxCircleShape extends mx.mxEllipse {
@@ -20,5 +20,10 @@ export class mxCircleShape extends mx.mxEllipse {
       new mx.mxConnectionConstraint(new mx.mxPoint(1, 0.5), true), // 右侧中点
       new mx.mxConnectionConstraint(new mx.mxPoint(0.5, 1), true)  // 底部中点
     ]
+  }
+
+  @AllowNestingChild()
+  getNestingChild() {
+    return [mxCircleShape]
   }
 }

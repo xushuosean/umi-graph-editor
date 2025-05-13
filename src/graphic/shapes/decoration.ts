@@ -1,5 +1,14 @@
 import mx from '@/mxgraph';
 
+export const nestingKey = Symbol('nesting');
+export function AllowNestingChild() {
+  return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const constraints = descriptor.value?.call(target);
+
+    Reflect.defineMetadata(nestingKey, constraints, target, propertyKey);
+  }
+}
+
 export function RegisterShape(name?: string) {
   return function(target: any) {
     mx.mxCellRenderer.registerShape(name ? name : target.name, target);

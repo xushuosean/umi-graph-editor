@@ -1,7 +1,7 @@
 import type { Shape } from "@/ioc/Shape";
 import mx from "@/mxgraph";
-import { mxGraph } from "mxgraph";
-import { constraintsKey } from "../shapes/decoration";
+import { mxCell, mxGraph } from "mxgraph";
+import { constraintsKey, nestingKey } from "../shapes/decoration";
 
 function isShape(value: any): value is Shape {
   return value && typeof value.id === 'string'
@@ -31,6 +31,24 @@ export const rewritePrototypeGraph = (graph?: mxGraph) => {
   mx.mxGraph.prototype.getAllConnectionConstraints = function (terminal, source) {
     const value = Reflect.getMetadata(constraintsKey, terminal.shape, 'getConstraints')
     return value ? value : []
+  }
+
+  const oldGetDropTarget = mx.mxDragSource.prototype.getDropTarget;
+  mx.mxDragSource.prototype.getDropTarget = function(graph, x, y, evt) {
+    const target = oldGetDropTarget.apply(this, [graph, x, y, evt])
+    if (!target) return target;
+
+    const shape = graph.view.getState(target).shape;
+    const nestingChild = Reflect.getMetadata(nestingKey, shape, 'getNestingChild');
+    const graphicType = this.dragElement.dataset.graphicType;
+    if (graphicType && nestingChild) {
+      const style = graph.getStylesheet().getCellStyle(graphicType);
+      if (nestingChild.some((f: any) => f.name === style.shape)) {
+        return target;
+      }
+      return null as unknown as mxCell;
+    }
+    return target;
   }
 
   mx.mxConnectionHandler.prototype.insertEdge = function (parent, id, value, source, target, style) {
