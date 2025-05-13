@@ -11,7 +11,7 @@ export const rewritePrototypeGraph = (graph?: mxGraph) => {
   const internalGraph = graph ? graph : mx.mxGraph.prototype;
 
   internalGraph.convertValueToString = function (cell) {
-    var value = this.model.getValue(cell);
+    const value = this.model.getValue(cell);
 
     if (value != null) {
       if (mx.mxUtils.isNode(value, '')) {
@@ -34,7 +34,7 @@ export const rewritePrototypeGraph = (graph?: mxGraph) => {
   }
 
   const oldGetDropTarget = mx.mxDragSource.prototype.getDropTarget;
-  mx.mxDragSource.prototype.getDropTarget = function(graph, x, y, evt) {
+  mx.mxDragSource.prototype.getDropTarget = function (graph, x, y, evt) {
     const target = oldGetDropTarget.apply(this, [graph, x, y, evt])
     if (!target) return target;
 
@@ -51,13 +51,36 @@ export const rewritePrototypeGraph = (graph?: mxGraph) => {
     return target;
   }
 
+  const oldGraphGetDropTarget = mx.mxGraph.prototype.getDropTarget;
+  mx.mxGraph.prototype.getDropTarget = function (cells: mxCell[], evt: Event, cell: mxCell, clone?: boolean) {
+    let target = oldGraphGetDropTarget.apply(this, [cells, evt, cell, clone]);
+
+    if (!target) {
+      if (!cell) return null as unknown as mxCell;
+      if (cells.some(c => c.id === cell?.id)) return null as unknown as mxCell;
+      const shape = this.view.getState(cell).shape;
+      const nestingChild = Reflect.getMetadata(nestingKey, shape, 'getNestingChild');
+
+      // console.log(shape, nestingChild)
+
+      if (cells.every(cell => {
+        return this.view.getState(cell).shape instanceof nestingChild[0]
+      })) {
+        return cell;
+      }
+      return null as unknown as mxCell;
+    }
+
+    return target;
+  }
+
   mx.mxConnectionHandler.prototype.insertEdge = function (parent, id, value, source, target, style) {
     if (this.factoryMethod == null) {
       // return this.graph.insertEdge(parent, id, value, source, target, style);
       return this.createEdge(value, source, target, style)
     }
     else {
-      var edge = this.createEdge(value, source, target, style);
+      let edge = this.createEdge(value, source, target, style);
       edge = this.graph.addEdge(edge, parent, source, target);
 
       return edge;
