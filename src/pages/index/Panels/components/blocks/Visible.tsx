@@ -15,13 +15,10 @@ const Visible = () => {
   const handleVisible = () => {
     if (!shape) return;
 
-    projectService.updateBlocks([
+    projectService.updateBlocksVisible([
       {
-        ...shape,
-        styles: {
-          ...shape.styles!,
-          visible: !shape.styles?.visible,
-        },
+        id: shape.id,
+        visible: !shape.styles?.visible
       },
     ]);
   };

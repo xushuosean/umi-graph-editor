@@ -40,6 +40,7 @@ const GraphContainer = () => {
     graph.setPanning(true);
     graph.setDropEnabled(true);
     graph.setConstrainChildren(false);
+    graph.foldingEnabled = false;
 
     // 设置画布扩展方向
     graph.maximumGraphBounds = new mx.mxRectangle(0, 0, Infinity, Infinity);
@@ -48,7 +49,7 @@ const GraphContainer = () => {
     registerStyle(graph);
 
     graph.addListener(
-      mx.mxEvent.CELLS_RESIZED,
+      mx.mxEvent.RESIZE_CELLS,
       (sender, evt: mxEventObject) => {
         const cells = evt.getProperty("cells");
         const bounds = evt.getProperty("bounds");
@@ -58,18 +59,15 @@ const GraphContainer = () => {
             const blockShape = cell.getValue() as BlockShape;
 
             return {
-              ...blockShape,
-              styles: {
-                ...blockShape.styles,
-                x: bounds[index].x,
-                y: bounds[index].y,
-                width: bounds[index].width,
-                height: bounds[index].height,
-              },
+              id: blockShape.id,
+              x: bounds[index].x,
+              y: bounds[index].y,
+              width: bounds[index].width,
+              height: bounds[index].height,
             };
           }
         );
-        projectService.updateBlocks(blocks);
+        projectService.updateBlocksGeo(blocks);
       }
     );
 
@@ -83,18 +81,15 @@ const GraphContainer = () => {
             const blockShape = cell.getValue() as BlockShape;
 
             return {
-              ...blockShape,
-              styles: {
-                ...blockShape.styles,
-                x: cell.geometry.x,
-                y: cell.geometry.y,
-                width: cell.geometry.width,
-                height: cell.geometry.height,
-              },
+              id: blockShape.id,
+              x: cell.geometry.x,
+              y: cell.geometry.y,
+              width: cell.geometry.width,
+              height: cell.geometry.height,
             };
           }
         );
-        projectService.updateBlocks(blocks);
+        projectService.updateBlocksGeo(blocks);
       }
     );
 
@@ -104,8 +99,6 @@ const GraphContainer = () => {
         mx.mxEvent.CHANGE,
         (selectionModel: mxGraphSelectionModel) => {
           const cells = graph.getSelectionCells();
-
-          console.log(cells, 'adf');
 
           setShapes(
             cells.map((cell) => cell.value as Shape).filter((item) => !!item)
@@ -132,43 +125,52 @@ const GraphContainer = () => {
         line: true,
         fromId: source.id,
         toId: target.id,
-      }
+      };
       projectService.addLines([line]);
-      const edge = new mx.mxCell('');
+      const edge = new mx.mxCell("");
       edge.setEdge(true);
-      return edge
-    }
+      return edge;
+    };
 
     /** subscribe start */
 
-    const addBlockSub = projectService.$blockShapesSubject.subscribe((blocks) => {
-      const model = graph?.getModel();
-      model?.beginUpdate();
+    const addBlockSub = projectService.$blockShapesAddSubject.subscribe(
+      (blocks) => {
+        const model = graph?.getModel();
+        model?.beginUpdate();
 
-      try {
-        blocks.forEach((block) => {
-          let parent = graph?.getDefaultParent();
-          if (block.parentId) {
-            parent = model?.getCell(block.parentId);
-          }
+        try {
+          blocks.forEach((block) => {
+            let parent = graph?.getDefaultParent();
+            if (block.parentId) {
+              parent = model?.getCell(block.parentId);
+            }
 
-          const { x = 0, y = 0, width = 10, height = 10 } = block?.styles ?? {};
+            const {
+              x = 0,
+              y = 0,
+              width = 10,
+              height = 10,
+            } = block?.styles ?? {};
 
-          graph?.insertVertex(
-            parent,
-            block.id,
-            block,
-            x,
-            y,
-            width,
-            height,
-            block.graphicType
-          );
-        });
-      } finally {
-        model?.endUpdate();
+            const cell = graph?.insertVertex(
+              parent,
+              block.id,
+              block,
+              x,
+              y,
+              width,
+              height,
+              block.graphicType
+            );
+
+            graph.getSelectionModel().setCell(cell);
+          });
+        } finally {
+          model?.endUpdate();
+        }
       }
-    });
+    );
 
     const updateBlockSub = projectService.$blockShapesUpdateSubject.subscribe(
       (blocks) => {
@@ -231,12 +233,19 @@ const GraphContainer = () => {
           const from = graph?.model.getCell(line.fromId);
           const to = graph?.model.getCell(line.toId);
 
-          graph.insertEdge(graph.getDefaultParent(), line.id, line, from, to, 'defaultEdge');
+          graph.insertEdge(
+            graph.getDefaultParent(),
+            line.id,
+            line,
+            from,
+            to,
+            "defaultEdge"
+          );
         });
       } finally {
         model?.endUpdate();
       }
-    })
+    });
 
     /** subscribe end */
 

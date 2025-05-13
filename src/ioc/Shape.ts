@@ -5,7 +5,7 @@ type BlockShapeStyles = {
   y: number;
   width: number;
   height: number;
-  visible: boolean;
+  visible?: boolean;
 }
 
 type LineShapeStyles = {
@@ -15,9 +15,9 @@ type LineShapeStyles = {
 export type ElementData = {
   id: GUID;
   value: any;
-  shapeId: GUID;
   line?: boolean;
   block?: boolean;
+  isDelete?: boolean;
 }
 
 export type Shape = {
@@ -43,6 +43,15 @@ export type LineShape = Shape & {
   styles?: LineShapeStyles;
 };
 
+/** Raw type */
+
+export type RawBlockShapeStyles = {
+  [x: string]: any;
+}
+
+export type RawLineShapeStyles = {
+  [x: string]: any;
+}
 
 export type RawShape = {
   id: GUID;
@@ -51,15 +60,19 @@ export type RawShape = {
   block?: boolean;
   line?: boolean;
   graphicType?: string;
-  styles?: BlockShapeStyles | LineShapeStyles;
+  styles?: RawBlockShapeStyles | RawLineShapeStyles;
 }
 
 export type RawBlockShape = RawShape & {
-  styles?: BlockShapeStyles;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  styles?: RawBlockShapeStyles;
 };
 
 export type RawLineShape = RawShape & {
   fromId: GUID,
   toId: GUID,
-  styles?: LineShapeStyles;
+  styles?: RawLineShapeStyles;
 };

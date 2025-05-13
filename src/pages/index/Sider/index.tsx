@@ -1,8 +1,8 @@
 // import { GraphicType } from "@/graphic/shapes";
 import { DefaultRectStyle } from "@/graphic/styles";
 import { DefaultCircleStyle } from "@/graphic/styles/DefaultCircleStyle";
-import { IProjectService } from "@/ioc/interfaces";
 import { myContainer } from "@/ioc/inversify.config";
+import { IProjectService } from "@/ioc/IProjectService";
 import { RawBlockShape } from "@/ioc/Shape";
 import { TYPES } from "@/ioc/types";
 import mx from "@/mxgraph";
@@ -55,13 +55,10 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
           block: true,
           parentId: dropTarget?.id,
           graphicType: item.graphicType,
-          styles: {
-            x,
-            y,
-            width: item.width,
-            height: item.height,
-            visible: true,
-          }
+          x: x,
+          y: y,
+          width: item.width,
+          height: item.height,
         };
 
         projectService.addBlocks([block]);

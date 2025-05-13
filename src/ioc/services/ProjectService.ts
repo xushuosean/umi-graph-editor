@@ -1,8 +1,8 @@
 import { inject, injectable } from "inversify";
 import { Subject } from "rxjs";
-import { ConnectionAction, ConnectionDataType, IConnectionService } from "../IConnectionService";
+import { ConnectionAction, ConnectionActionUpdateBlockGeo, ConnectionActionUpdateBlockParent, ConnectionActionUpdateBlockVisible, ConnectionDataType, IConnectionService, SingleUpdateBlockAction } from "../IConnectionService";
 import { IMessageService } from "../IMessageService";
-import { IProjectService } from "../interfaces";
+import { IProjectService, UpdateBlockGeoPayload, UpdateBlockParentPayload, UpdateBlockVisiblePayload } from "../IProjectService";
 import { BlockData, BlockShape, ElementData, GUID, LineData, LineShape, RawBlockShape, RawLineShape } from "../Shape";
 import { TYPES } from "../types";
 import { DiagramService } from "./DiagramService";
@@ -12,7 +12,7 @@ export class ProjectService implements IProjectService {
   connectionService: IConnectionService;
   messageService: IMessageService;
 
-  $blockShapesSubject: Subject<BlockShape[]> = new Subject();
+  $blockShapesAddSubject: Subject<BlockShape[]> = new Subject();
   $blockShapesUpdateSubject: Subject<BlockShape[]> = new Subject();
   $blockShapesDeleteSubject: Subject<BlockShape[]> = new Subject();
 
@@ -115,7 +115,7 @@ export class ProjectService implements IProjectService {
   /** action function add block */
   addBlocks(blocks: RawBlockShape[]): void {
     this.connectionService.sendMessage({
-      type: ConnectionAction.Add,
+      type: ConnectionAction.AddBlocks,
       shapes: blocks
     })
   }
@@ -123,23 +123,53 @@ export class ProjectService implements IProjectService {
   /** action function add line */
   addLines(lines: RawLineShape[]): void {
     this.connectionService.sendMessage({
-      type: ConnectionAction.Add,
+      type: ConnectionAction.AddLines,
       shapes: lines
     })
   }
 
+  updateBlocksGeo(blocksGeo: UpdateBlockGeoPayload[]): void {
+    const actions = blocksGeo.map(blockGeo => {
+      return {
+        type: ConnectionAction.UpdateBlockGeo,
+        ...blockGeo
+      } as ConnectionActionUpdateBlockGeo
+    })
+    this.updateBlocks(actions);
+  }
+
+  updateBlocksVisible(blocksVisible: UpdateBlockVisiblePayload[]): void {
+    const actions = blocksVisible.map(blockVisible => {
+      return {
+        type: ConnectionAction.UpdateBlockVisible,
+        ...blockVisible,
+      } as ConnectionActionUpdateBlockVisible
+    })
+    this.updateBlocks(actions);
+  }
+
+  updateBlockParent(blocksParent: UpdateBlockParentPayload[]): void {
+    const actions = blocksParent.map(blockParent => {
+      return {
+        type: ConnectionAction.UpdateBlockParent,
+        ...blockParent,
+      } as ConnectionActionUpdateBlockParent
+    })
+    this.updateBlocks(actions);
+  }
+
   /** action functio update block */
-  updateBlocks(blocks: RawBlockShape[]): void {
+  updateBlocks(actions: SingleUpdateBlockAction[]): void {
     this.connectionService.sendMessage({
-      type: ConnectionAction.Update,
-      shapes: blocks
+      type: ConnectionAction.UpdateBlocks,
+      actions: actions
     })
   }
 
   /** action function update line */
   updateLines(lines: RawLineShape[]): void {
     this.connectionService.sendMessage({
-      type: ConnectionAction.Update,
+      type: ConnectionAction.UpdateLines,
       shapes: lines
     })
   }
@@ -147,7 +177,7 @@ export class ProjectService implements IProjectService {
   /** action function delete block */
   deleteBlocks(blockIds: GUID[]): void {
     this.connectionService.sendMessage({
-      type: ConnectionAction.Delete,
+      type: ConnectionAction.DeleteBlocks,
       ids: blockIds
     })
   }
@@ -155,7 +185,7 @@ export class ProjectService implements IProjectService {
   /** action function delete line */
   deleteLines(lineIds: GUID[]): void {
     this.connectionService.sendMessage({
-      type: ConnectionAction.Delete,
+      type: ConnectionAction.DeleteLines,
       ids: lineIds,
     })
   }
@@ -169,7 +199,7 @@ export class ProjectService implements IProjectService {
       this.blockShapes.set(block.id, block);
     })
 
-    this.$blockShapesSubject.next(blocks);
+    this.$blockShapesAddSubject.next(blocks);
   }
 
   linesAdded(lines: LineShape[]) {

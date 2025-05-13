@@ -1,7 +1,7 @@
 import { Container } from "inversify";
 import { IConnectionService } from "./IConnectionService";
 import { IMessageService } from "./IMessageService";
-import { IProjectService } from "./interfaces";
+import { IProjectService } from "./IProjectService";
 import { ConnectionStaticService } from "./services/ConnectionStaticService";
 import { MessageService } from "./services/MessageService";
 import { ProjectService } from "./services/ProjectService";

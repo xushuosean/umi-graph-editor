@@ -1,12 +1,34 @@
 import { Subject } from "rxjs";
+import { SingleUpdateBlockAction } from "./IConnectionService";
 import { DiagramService } from "./services/DiagramService";
 import { BlockShape, GUID, LineShape, RawBlockShape, RawLineShape } from "./Shape";
+
+export type UpdateBlockGeoPayload = {
+  id: GUID;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+}
+
+export type UpdateBlockVisiblePayload = {
+  id: GUID;
+  visible: boolean;
+}
+
+export type UpdateBlockParentPayload = {
+  id: GUID;
+  parentId: GUID;
+}
 
 export interface IProjectService {
   addBlocks(blocks: RawBlockShape[]): void;
   addLines(lines: RawLineShape[]): void;
 
-  updateBlocks(blocks: RawBlockShape[]): void;
+  updateBlocks(actions: SingleUpdateBlockAction[]): void;
+  updateBlocksGeo(blocksGeo: UpdateBlockGeoPayload[]): void;
+  updateBlocksVisible(blocksVisible: UpdateBlockVisiblePayload[]): void;
+  updateBlockParent(blocksParent: UpdateBlockParentPayload[]): void;
   updateLines(lines: RawLineShape[]): void;
 
   deleteBlocks(blockIds: GUID[]): void;
@@ -24,7 +46,7 @@ export interface IProjectService {
   currentDiagramService: DiagramService | null;
   createDiagram(): void;
 
-  $blockShapesSubject: Subject<BlockShape[]>;
+  $blockShapesAddSubject: Subject<BlockShape[]>;
   $blockShapesUpdateSubject: Subject<BlockShape[]>;
   $blockShapesDeleteSubject: Subject<BlockShape[]>;
 

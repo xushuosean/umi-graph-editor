@@ -18,13 +18,10 @@ const BlockHeight = () => {
   const projectService = useProjectService();
 
   const handleAdd = () => {
-    projectService.updateBlocks([
+    projectService.updateBlocksGeo([
       {
-        ...shape,
-        styles: {
-          ...shape.styles!,
-          height: height + 10
-        }
+        id: shape?.id!,
+        height: height + 10
       }
     ])
   }

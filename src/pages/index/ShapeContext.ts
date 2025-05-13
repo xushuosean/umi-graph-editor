@@ -1,5 +1,5 @@
 import { useProjectService } from "@/hooks/useProjectService";
-import { IProjectService } from "@/ioc/interfaces";
+import { IProjectService } from "@/ioc/IProjectService";
 import { BlockShape, LineShape, Shape } from "@/ioc/Shape";
 import { MenuProps } from "antd";
 import { createContext, useContext, useEffect, useState } from "react";
