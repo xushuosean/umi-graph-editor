@@ -17,6 +17,7 @@ const GraphContainer = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [graph, setGraph] = useState<mxGraph | null>(null);
+  const [panelPosition, setPanelPostion] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
 
   const createGraph = useCallback(() => {
     if (!containerRef.current) return null;
@@ -103,6 +104,11 @@ const GraphContainer = () => {
           setShapes(
             cells.map((cell) => cell.value as Shape).filter((item) => !!item)
           );
+
+          const bounds = graph.getView().getBounds(cells);
+          if (bounds) {
+            setPanelPostion({ x: bounds.x, y: bounds.y - 50 })
+          }
         }
       );
 
@@ -265,7 +271,7 @@ const GraphContainer = () => {
       <Dropdown trigger={["contextMenu"]} menu={{ items: menus }}>
         <div className={styles.container} ref={containerRef}></div>
       </Dropdown>
-      <div className={styles.panels}>
+      <div className={styles.panels} style={{ left: panelPosition.x, top: panelPosition.y }}>
         <ShapeProvider value={shapes}>
           <Panels />
         </ShapeProvider>
