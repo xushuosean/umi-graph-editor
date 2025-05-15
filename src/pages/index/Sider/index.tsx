@@ -1,6 +1,7 @@
 // import { GraphicType } from "@/graphic/shapes";
 import { DefaultRectStyle } from "@/graphic/styles";
 import { DefaultCircleStyle } from "@/graphic/styles/DefaultCircleStyle";
+import { DefaultReactStyle } from "@/graphic/styles/DefaultReactStyle";
 import { myContainer } from "@/ioc/inversify.config";
 import { IProjectService } from "@/ioc/IProjectService";
 import { RawBlockShape } from "@/ioc/Shape";
@@ -34,6 +35,14 @@ const Sider: FC<SiderProps> = ({ graph, className }) => {
       height: 100,
       icon: <SunOutlined />,
       graphicType: DefaultCircleStyle.name,
+      line: false
+    },
+    {
+      name: "react组件",
+      width: 200,
+      height: 100,
+      icon: <FundOutlined />,
+      graphicType: DefaultReactStyle.name,
       line: false
     },
     {
